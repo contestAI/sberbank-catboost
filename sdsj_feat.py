@@ -41,7 +41,6 @@ def check_column_name(name):
 
     return True
 
-
 def load_data(filename, datatype='train', cfg={},):
 
     model_config = cfg
@@ -94,8 +93,4 @@ def load_data(filename, datatype='train', cfg={},):
         df.fillna(-1, inplace=True)
 
     return df.values.astype(np.float16) if 'is_big' in model_config else df, y, model_config, line_id
-
-
-
-
 
