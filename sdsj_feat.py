@@ -41,13 +41,24 @@ def check_column_name(name):
 
     return True
 
+def add_holidays(df, file='holidays.csv'):
+    holidays = pd.read_csv(file, parse_dates=True, infer_datetime_format=True)
+    col = holidays.columns[0]
+    ht = pd.to_datetime(holidays[col])
+
+    dt_cols = [col for col in df if col.startswith('date')]
+    for col in dt_cols:
+        df['number_' + col + '_holidays'] = df[col].isin(ht).astype(int)
+
+    return df
+
 def load_data(filename, datatype='train', cfg={},):
 
     model_config = cfg
     model_config['missing'] = True
 
     # read dataset
-    df = pd.read_csv(filename, low_memory=False)
+    df = pd.read_csv(filename, low_memory=False, nrows = 100000)
     if datatype == 'train':
         y = df.target.values
         df = df.drop('target', axis=1)
@@ -60,6 +71,9 @@ def load_data(filename, datatype='train', cfg={},):
     # features from datetime
     df = transform_datetime_features(df)
     print('Transform datetime done, shape {}'.format(df.shape))
+
+    # features from holidays
+    df = add_holidays(df)
 
     # categorical encoding
     if datatype == 'train':

@@ -52,8 +52,20 @@ def get_best_params(X, y, mode):
     hyperparams = space_eval(space, best)
     return hyperparams
 
+def get_default_params():
+    hyperparams = dict()
+    hyperparams["iterations"] = 400
+    hyperparams["used_ram_limit"] = '512mb'
+    hyperparams["one_hot_max_size"] = 10
+    hyperparams["nan_mode"] = 'Min'
+    hyperparams["depth"] = 5
+    hyperparams["learning_rate"] = 0.01
+    hyperparams["random_strength"] = 1.5
+    hyperparams["bagging_temperature"] = 1.5
+    return hyperparams
+
 if __name__ == '__main__':
-    dataset = 2
+    dataset = 1
     tasktype = 'r'
     parser = argparse.ArgumentParser()
     parser.add_argument('--train-csv', default='../sberbank_data/check_{}_{}/train.csv'.format(dataset, tasktype))
@@ -99,7 +111,8 @@ if __name__ == '__main__':
     idx = np.random.choice(range(df_X.shape[0]), 100)
     X_sample, y_sample = df_X.loc[idx], df_y[idx]
     time2params = time.time()
-    hp_params = get_best_params(X_sample, y_sample, model_config['mode'])
+    # hp_params = get_best_params(X_sample, y_sample, model_config['mode'])
+    hp_params = get_default_params()
     print('Time to get parameters:', time.time() - time2params)
     model_params.update(hp_params)
     print('Final model params:', model_params)
@@ -111,7 +124,7 @@ if __name__ == '__main__':
     while iter_time < TIME_LIMIT - (time.time() - start_time) - 10 \
             and total_iter < N:
         start_iter = time.time()
-        total_iter = total_iter + 100
+        total_iter = total_iter + 400
         model_params["iterations"] = total_iter
         if args.mode == 'regression':
             model_params["loss_function"] = "RMSE"
@@ -130,6 +143,8 @@ if __name__ == '__main__':
         model.save_model(os.path.join(args.model_dir, 'model.catboost'))
         iter_time = time.time() - start_iter
         print('Time per iteration: {}'.format(iter_time))
+
+        break # finish after first iteration
 
 
 
